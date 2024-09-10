@@ -1,0 +1,267 @@
+1. Setup and Initialization
+a) Create a new Spark Session with new SparkConfig
+
+from pyspark.sql import SparkSession
+from pyspark import SparkConf
+
+# Create Spark configuration
+conf = SparkConf().setAppName("Airline Delay Analysis").setMaster("local[*]")
+
+# Initialize Spark session
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
+
+---------
+b) Create a new instance of Spark SQL session and define a DataFrame using the Flights_Delay.csv dataset.
+
+# Load the dataset
+df = spark.read.csv('/mnt/data/Flights_Delay.csv', header=True, inferSchema=True)
+
+# Create a temporary view for SQL queries
+df.createOrReplaceTempView("flights")
+
+------
+c) Create a Spark HIVE table flights_table
+
+# Save the DataFrame as a Hive table
+df.write.mode("overwrite").saveAsTable("flights_table")
+
+---------
+d) Describe the table schema & show the top 10 rows of the dataset
+
+# Describe the table schema
+df.printSchema()
+
+# Show top 10 rows
+df.show(10)
+
+---*********************************-------
+
+2. Query Performance Optimization
+e) Apply query performance optimization techniques
+Here are a few optimization techniques:
+
+Partitioning DataFrame by a specific column (e.g., by AIRLINE)
+
+df = df.repartition(10, "AIRLINE")
+-----
+Saving as Parquet (which is more efficient than CSV)
+
+df.write.mode("overwrite").parquet("/mnt/data/Flights_Delay_Parquet")
+-----
+Caching the DataFrame (for repeated use)
+
+df.cache()
+---
+Predicate Pushdown (in Spark SQL, using filtering conditions to limit data retrieval)
+
+filtered_df = df.filter(df.ARRIVAL_DELAY > 0)
+
+--************************------
+
+3. Spark SQL Queries with Analysis and Visualization
+I'll generate code snippets for each of the specific queries you requested. 
+Let's start with the first few, and you can run these in your Spark environment.
+
+f) Average arrival delay caused by airlines
+
+avg_arrival_delay = spark.sql("""
+SELECT AIRLINE, AVG(ARRIVAL_DELAY) as avg_delay
+FROM flights
+GROUP BY AIRLINE
+ORDER BY avg_delay DESC
+""")
+avg_arrival_delay.show()
+
+------
+g) Days of months with respect to the average of arrival delays
+
+avg_delay_by_day = spark.sql("""
+SELECT DAY, AVG(ARRIVAL_DELAY) as avg_delay
+FROM flights
+GROUP BY DAY
+ORDER BY avg_delay DESC
+""")
+avg_delay_by_day.show()
+
+-----
+h) Arrange weekdays with respect to the average arrival delays caused
+
+avg_delay_by_weekday = spark.sql("""
+SELECT DAY_OF_WEEK, AVG(ARRIVAL_DELAY) as avg_delay
+FROM flights
+GROUP BY DAY_OF_WEEK
+ORDER BY avg_delay DESC
+""")
+avg_delay_by_weekday.show()
+
+----------
+i) Arrange Days of month as per cancellations done in descending order
+
+cancellations_by_day = spark.sql("""
+SELECT DAY, COUNT(*) as cancellation_count
+FROM flights
+WHERE CANCELLED = 1
+GROUP BY DAY
+ORDER BY cancellation_count DESC
+""")
+cancellations_by_day.show()
+
+-------------
+j) Find the Top 10 busiest airports with respect to the day of the week
+
+busiest_airports = spark.sql("""
+SELECT ORIGIN_AIRPORT, DAY_OF_WEEK, COUNT(*) as flight_count
+FROM flights
+GROUP BY ORIGIN_AIRPORT, DAY_OF_WEEK
+ORDER BY flight_count DESC
+LIMIT 10
+""")
+busiest_airports.show()
+
+----------------
+k) Finding airlines that make the maximum number of cancellations
+
+max_cancellations_airline = spark.sql("""
+SELECT AIRLINE, COUNT(*) as cancellation_count
+FROM flights
+WHERE CANCELLED = 1
+GROUP BY AIRLINE
+ORDER BY cancellation_count DESC
+""")
+max_cancellations_airline.show()
+
+----------
+l) Find and order airlines in descending order that make the most number of diversions
+
+max_diversions_airline = spark.sql("""
+SELECT AIRLINE, COUNT(*) as diversion_count
+FROM flights
+WHERE DIVERTED = 1
+GROUP BY AIRLINE
+ORDER BY diversion_count DESC
+""")
+max_diversions_airline.show()
+
+--------
+m) Finding days of the month that see the most number of diversions
+
+diversions_by_day = spark.sql("""
+SELECT DAY, COUNT(*) as diversion_count
+FROM flights
+WHERE DIVERTED = 1
+GROUP BY DAY
+ORDER BY diversion_count DESC
+""")
+diversions_by_day.show()
+
+---------
+n) Calculating the mean and standard deviation of departure delay for all flights in minutes
+
+departure_delay_stats = spark.sql("""
+SELECT
+    MEAN(DEPARTURE_DELAY) as mean_departure_delay,
+    STDDEV(DEPARTURE_DELAY) as stddev_departure_delay
+FROM flights
+""")
+departure_delay_stats.show()
+
+-------
+o) Calculating the mean and standard deviation of arrival delay for all flights in minutes
+
+arrival_delay_stats = spark.sql("""
+SELECT
+    MEAN(ARRIVAL_DELAY) as mean_arrival_delay,
+    STDDEV(ARRIVAL_DELAY) as stddev_arrival_delay
+FROM flights
+""")
+arrival_delay_stats.show()
+
+----
+p) Finding all diverted routes from a source to destination airport & identifying the most diverted route
+
+diverted_routes = spark.sql("""
+SELECT 
+    ORIGIN_AIRPORT, 
+    DESTINATION_AIRPORT, 
+    COUNT(*) as diversion_count
+FROM flights
+WHERE DIVERTED = 1
+GROUP BY ORIGIN_AIRPORT, DESTINATION_AIRPORT
+ORDER BY diversion_count DESC
+""")
+diverted_routes.show()
+
+----------
+q) Finding airlines with their total flight count, number of flights delayed by more than 30 minutes, percentage of such flights (excluding specific airlines), and ordering by percentage in descending order
+
+filtered_airlines = spark.sql("""
+SELECT AIRLINE, 
+       COUNT(*) as total_flights,
+       SUM(CASE WHEN ARRIVAL_DELAY > 30 AND DAY_OF_WEEK NOT IN (6, 7) THEN 1 ELSE 0 END) as delayed_flights,
+       (SUM(CASE WHEN ARRIVAL_DELAY > 30 AND DAY_OF_WEEK NOT IN (6, 7) THEN 1 ELSE 0 END) * 100.0) / COUNT(*) as percentage_delayed
+FROM flights
+WHERE AIRLINE NOT IN ('AK', 'HI', 'PR', 'VI')
+GROUP BY AIRLINE
+HAVING COUNT(*) > 10
+ORDER BY percentage_delayed DESC
+""")
+filtered_airlines.show()
+
+-------
+r) Finding airlines with their total flight count, number of flights delayed by less than 30 minutes, percentage of such flights (excluding specific airlines), and ordering by percentage in descending order
+
+weekend_delays = spark.sql("""
+SELECT AIRLINE, 
+       COUNT(*) as total_flights,
+       SUM(CASE WHEN DEPARTURE_DELAY < 30 AND DAY_OF_WEEK IN (6, 7) THEN 1 ELSE 0 END) as on_time_flights,
+       (SUM(CASE WHEN DEPARTURE_DELAY < 30 AND DAY_OF_WEEK IN (6, 7) THEN 1 ELSE 0 END) * 100.0) / COUNT(*) as percentage_on_time
+FROM flights
+WHERE AIRLINE NOT IN ('AK', 'HI', 'PR', 'VI')
+GROUP BY AIRLINE
+HAVING COUNT(*) > 10
+ORDER BY percentage_on_time DESC
+""")
+weekend_delays.show()
+
+----------
+s) Finding the best time of day/day of week/time of the year to fly with minimum delays
+
+best_time_to_fly = spark.sql("""
+SELECT
+    CASE 
+        WHEN HOUR(SCHEDULED_DEPARTURE/100) < 12 THEN 'Morning'
+        WHEN HOUR(SCHEDULED_DEPARTURE/100) BETWEEN 12 AND 18 THEN 'Afternoon'
+        ELSE 'Evening'
+    END as time_of_day,
+    DAY_OF_WEEK,
+    MONTH,
+    AVG(ARRIVAL_DELAY) as avg_arrival_delay
+FROM flights
+GROUP BY time_of_day, DAY_OF_WEEK, MONTH
+ORDER BY avg_arrival_delay ASC
+""")
+best_time_to_fly.show()
+
+----
+t) Identifying the best airline to travel considering cancellations, arrival and departure delays, and overall performance
+
+best_airline = spark.sql("""
+SELECT AIRLINE,
+       COUNT(*) as total_flights,
+       SUM(CASE WHEN CANCELLED = 1 THEN 1 ELSE 0 END) as cancellations,
+       SUM(CASE WHEN ARRIVAL_DELAY > 0 THEN 1 ELSE 0 END) as arrival_delays,
+       SUM(CASE WHEN DEPARTURE_DELAY > 0 THEN 1 ELSE 0 END) as departure_delays,
+       (SUM(CASE WHEN CANCELLED = 1 THEN 1 ELSE 0 END) + 
+        SUM(CASE WHEN ARRIVAL_DELAY > 0 THEN 1 ELSE 0 END) + 
+        SUM(CASE WHEN DEPARTURE_DELAY > 0 THEN 1 ELSE 0 END)) as total_issues,
+       (SUM(CASE WHEN CANCELLED = 1 THEN 1 ELSE 0 END) + 
+        SUM(CASE WHEN ARRIVAL_DELAY > 0 THEN 1 ELSE 0 END) + 
+        SUM(CASE WHEN DEPARTURE_DELAY > 0 THEN 1 ELSE 0 END)) * 100.0 / COUNT(*) as issue_percentage
+FROM flights
+GROUP BY AIRLINE
+ORDER BY issue_percentage ASC, total_issues ASC
+""")
+best_airline.show()
+
+----------
+

@@ -1,0 +1,113 @@
+Big Data (HDFS) Assignment
+Problem Statement: Using Command line of HDFS, perform following tasks. 
+
+a) Create a directory /hadoop/hdfs/ in HDFS 
+
+	hdfs dfs -mkdir -p /hadoop/hdfs
+
+b) Create a temp directory in Hadoop. Run HDFS command to delete “temp” directory.
+
+	hdfs dfs -mkdir /hadoop/temp
+	hdfs dfs -rm -r /temp
+
+c)List all the files/directories for the given hdfs destination path.
+
+	hdfs dfs -ls /hadoop/hdfs/
+
+d)Command that will list the directories(not files) in /hadoop folder.
+
+	hdfs dfs -ls -d /hadoop/*/
+
+e) Command to list recursively all files in hadoop directory and all subdirectories in hadoop directory
+
+	hdfs dfs -ls -R /hadoop/
+
+f) List all the directory inside /hadoop/hdfs/ directory which starts with 'dir'.
+	
+	hdfs dfs -ls -d /hadoop/hdfs/dir*/
+
+g) Create a temp.txt file. Copies this file from local file system to HDFS
+
+        hdfs dfs -copyFromLocal temp.txt /hadoop/hdfs
+
+h) Copies the file from HDFS to local file system.
+
+     hdfs dfs -copyToLocal /hadoop/hdfs /home/local
+
+i)Command to copy from local directory with the source being restricted to a local file reference.
+
+         hdfs dfs -copyFromLocal /local/path/to/file /hdfs/directory/
+
+j) Command to copies to local directory with the source being restricted to a local file reference.
+
+	hdfs dfs -put /home/user/temp.txt /hadoop/hdfs/
+
+k) Command to move from local directory source to Hadoop directory.
+
+	hdfs dfs -moveFromLocal /home/user/temp.txt /hadoop/hdfs/
+
+l)Deletes the directory and any content under it recursively.
+
+	hdfs dfs -rm -r /hadoop/hdfs/temp
+
+m)List the files and show Format file sizes in a human-readable fashion.
+
+	hdfs dfs -du -h /hadoop/
+
+n) Take a source file and outputs the file in text format on the terminal.
+      
+	hdfs dfs -cat /hadoop/hdfs/example.txt 
+
+o) Display the content of the HDFS file test on your /user/hadoop2 directory.
+	
+	hdfs dfs -cat /user/hadoop2/test
+
+p) Append the content of a local file test1 to a hdfs file test2.
+     
+	hdfs dfs -appendToFile /home/local/test1 /hadoop/hdfs/test2
+
+q) Show the capacity, free and used space of the filesystem
+
+     filesytem                     Size   Used    Available Use%
+hdfs://quickstart.cloudera:8020 54.5 G 837.1 M 41.8 G    1%
+
+r) Shows the capacity, free and used space of the filesystem.  Add parameter Formats the sizes of files in a human-readable fashion.
+	
+	hdfs dfs -df -h
+
+s) Show the amount of space, in bytes, used by the files that match the specified file pattern.
+	
+	hdfs dfs -du -s /hadoop/hdfs/test*
+
+t) Show the amount of space, in bytes, used by the files that match the specified file pattern. Formats the sizes of files in a human-readable fashion.
+	
+	hdfs dfs -du -h /hadoop/hdfs/test*
+
+u) Check the health of the Hadoop file system.
+	
+	hdfs fsck /
+
+v) Command to turn off the safemode of Name Node.
+	
+	hdfs dfsadmin -safemode leave
+
+w) HDFS command to format NameNode.
+	
+	hdfs namenode -format
+
+x) Create a file named hdfstest.txt and change it number of replications to 3.
+      1.hadoop fs -put hdfstest.txt /hadoop/hdfs/hdfstest.txt
+      2.hadoop fs -setrep -w 3 /hadoop/hdfs/hdfstest.txt
+
+y) Write command to display number of replicas for hdfstest.txt file.
+	
+	hdfs dfs -stat %r /hadoop/hdfs/hdfstest.txt
+
+z) Write command to Display the status of file “hdfstest.txt” like block size, filesize in bytes.
+	
+	hdfs dfs -stat '%b %s %r' /hadoop/hdfs/hdfstest.txt
+
+
+aa) Write HDFS command to change file permission from rw – r – r to rwx-rw-x for hdfstest.txt.  
+	hdfs dfs -chmod 765 /hadoop/hdfs/hdfstest.txt
+
