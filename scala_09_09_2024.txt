@@ -1,0 +1,118 @@
+Scala Assignment:
+
+-----------------------------
+Note:
+Object ---In Scala, an object is a singleton instance, meaning there’s only one instance of it. 
+Here, ArrayOperations is the name of the object.
+
+2. Define the main Method
+The main method is the entry point of a Scala application. 
+It takes an array of strings as arguments (args: Array[String]) and returns Unit, which is similar to void in other languages.
+
+1. println 
+The println function in Scala is used to print a line of text to the console. 
+It automatically adds a newline character at the end of the output.
+
+2. s"Maximum Element: $maxElement"
+This part of the statement is a string interpolation in Scala. 
+String interpolation allows you to embed variables directly within a string. 
+The s before the double quotes indicates that the string is an interpolated string.
+
+3. "Maximum Element: $maxElement"
+Within the interpolated string, the $ symbol is used to insert the value of a variable into the string. 
+Here, $maxElement will be replaced by the value of the variable maxElement.
+
+1. val modifiedArray
+This declares a new immutable variable named modifiedArray. 
+In Scala, val is used to define a constant, meaning once it’s assigned a value, it cannot be changed.
+
+array.map
+The map method is a higher-order function available on collections like arrays. 
+It applies a given function to each element of the collection and returns a new collection with the results.
+
+3. (_ * 2)
+This is an anonymous function (also known as a lambda function) that takes a single argument (represented by _) and multiplies it by 2. 
+In this context, _ represents each element of the array.
+
+4.When you call array.map(_ * 2), Scala will:
+	Iterate over each element in the array.
+	Apply the function _ * 2 to each element, effectively doubling each value.
+	Collect the results into a new array.
+
+------------
+
+4. modifiedArray.mkString(", ")
+The mkString method is used to create a string representation of the array. 
+The argument ", " specifies that each element in the array should be separated by a comma and a space in the resulting string.
+
+when this statement 
+println(s"Modified Array: ${modifiedArray.mkString(", ")}") executed, 
+
+ex. The statement will then be evaluated as:
+Scala
+println("Modified Array: 2, 4, 6, 8, 10")
+
+Scala will:
+
+Evaluate the expression inside the interpolated string.
+Replace ${modifiedArray.mkString(", ")} with the actual string representation of the modifiedArray.
+Print the resulting string to the console.
+----------------------------------------
+#1. Basic Array Operations:
+
+#Create an array of integers with 10 elements
+val array = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+#Calculate the sum and the average of all elements in the array
+val sum = array.sum
+val average = array.sum.toDouble / array.length
+
+#Modify the array by multiplying each element by 2
+val modifiedArray = array.map(_ * 2)
+
+println(s"Modified Array: ${modifiedArray.mkString(", ")}")
+
+println(s"Sum: $sum")
+println(s"Average: $average")
+
+#2. Array Manipulation:
+
+#reverse the given array.
+val reversedArray = array.reverse
+
+println(s"Reversed Array: ${reversedArray.mkString(", ")}")
+
+#Find the maximum and minimum elements in the array.
+val maxElement = array.max
+val minElement = array.min
+
+println(s"Maximum Element: $maxElement")
+println(s"Minimum Element: $minElement")
+
+----------------------
+Collections
+
+#1. Lists:
+// Create a list of integers from 1 to 10
+val numbers = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+// Filter the list to keep only even numbers
+val evenNumbers = numbers.filter(_ % 2 == 0)
+
+// Find the sum of all elements in the filtered list
+val sumOfEvenNumbers = evenNumbers.sum
+
+println(s"Even numbers: $evenNumbers")
+println(s"Sum of even numbers: $sumOfEvenNumbers")
+
+
+
+
+ 
+2. Implement a generic stack data structure using Scala collections (like `List`) and provide basic push, pop, and peek functionalities.
+
+3. Maps:
+   - Create a Map to store 5 country-capital pairs.
+   - Write a program to check if a given key (country) exists in the map.
+   - If the country exists, print its capital.
+
